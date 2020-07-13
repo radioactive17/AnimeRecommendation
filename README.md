@@ -1,2 +1,2 @@
 # AnimeRecommendation
-Recommending Anime series to users!!
+Recommending Anime to users!!
