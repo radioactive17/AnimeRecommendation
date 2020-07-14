@@ -23,12 +23,32 @@ print(anime.head())
 ratings = pd.read_csv('rating.csv')
 print(ratings.head())
 
+#Counting the number of animes
+anime_count = pd.DataFrame(ratings.groupby('anime_id').size(), columns = ['count'])
+print(anime_count)
+
+popular_animes = list(set(anime_count.query('count >= 50').index))
+print(popular_animes)
+
+anime_filter = ratings.anime_id.isin(popular_animes).values
+print(anime_filter)
+
 #Counting the number of users
-anime_count = pd.DataFrame(ratings.groupby('user_id').size(), columns = ['count'])
+users_count = pd.DataFrame(ratings.groupby('user_id').size(), columns=['count'])
 print(users_count)
 
+active_users = list(set(users_count.query('count >= 30').index))
+print(active_users)
+
+users_filter = ratings.user_id.isin(active_users).values
+print(users_filter)
+
+ratings_filtered = ratings[anime_filter & users_filter]
+print(ratings_filtered)
+
 #Pivoting
-anime_user_mat = ratings.pivot(index='anime_id', columns='user_id', values='rating').fillna(0)
+anime_user_mat = ratings_filtered.pivot_table(index='anime_id', columns='user_id', values='rating').fillna(0)
+
 print(anime_user_mat)
 
 hashmap = {
@@ -68,7 +88,7 @@ else:
           '{0}\n'.format([x[0] for x in match_tuple]))
 idx = match_tuple[0][1]
 
-distances, indices = model_knn.kneighbors(anime_user_mat_sparse[idx],n_neighbors=10+1)
+distances, indices = model_knn.kneighbors(anime_user_mat_sparse[idx],n_neighbors=5+1)
 
 raw_recommends = sorted(list(zip(indices.squeeze().tolist(), distances.squeeze().tolist())), key=lambda x: x[1])[:0:-1]
 print(raw_recommends)
